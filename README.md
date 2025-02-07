@@ -1,213 +1,147 @@
-SWIFT Code REST API
+# Remitly Exercise
+
 This project is a REST API application designed to parse, store, and expose SWIFT (BIC) code data. SWIFT codes uniquely identify bank headquarters and branches for international wire transfers. The application reads SWIFT code data (originally maintained in a spreadsheet), processes it according to specific business rules, stores the data in a PostgreSQL database, and provides a set of RESTful endpoints to access and manage the data.
 
-Table of Contents
-Features
-Technologies Used
-Project Structure
-Setup & Installation
-API Endpoints
-Testing
-Troubleshooting
-Contributing
-License
-Contact
-Features
-Data Parsing:
+## Table of Contents
 
-Determines if a SWIFT code represents a headquarters (codes ending with XXX) or a branch.
-Associates branch codes with their corresponding headquarters based on the first 8 characters.
-Formats country codes and names as uppercase strings.
-Ignores redundant columns from the input data file.
-Data Storage:
+- [Technologies Used](#technologies-used)
+- [Setup & Installation](#setup--installation)
+- [API Endpoints](#api-endpoints)
+- [Testing](#testing)
 
-Uses PostgreSQL for fast, low-latency querying.
-Supports efficient retrieval by individual SWIFT code and by country (using ISO-2 codes).
-REST API:
+## Features
 
-Retrieve details for a single SWIFT code (headquarters include branch details).
-Retrieve all SWIFT codes for a specific country.
-Add new SWIFT code entries.
-Delete SWIFT code entries by code.
-Containerization:
+- **Data Parsing:**
 
-The application and PostgreSQL database are containerized using Docker and Docker Compose.
-Endpoints are accessible at http://localhost:8080.
-Testing:
+  - Determines if a SWIFT code represents a headquarters (codes ending with `XXX`) or a branch.
+  - Associates branch codes with their corresponding headquarters based on the first 8 characters.
+  - Formats country codes and names as uppercase strings.
+  - Ignores redundant columns from the input data file.
 
-Comprehensive unit and integration tests ensure the solution’s correctness and reliability.
-Technologies Used
-Backend: Java with Spring Boot (or your chosen framework)
-Database: PostgreSQL
-Containerization: Docker & Docker Compose
-Testing: JUnit (or your preferred testing framework)
-Project Structure
-plaintext
-Kopiuj
-├── src/
-│ ├── main/
-│ │ ├── java/ # Application source code
-│ │ └── resources/ # Application configuration files
-│ └── test/ # Unit and integration tests
-├── Dockerfile # Containerizes the application
-├── docker-compose.yml # Defines application and database services
-├── README.md # Project documentation (this file)
-└── ... # Other configuration files (e.g., pom.xml or build.gradle)
-Setup & Installation
-Prerequisites
-Docker
-Docker Compose
-Clone the Repository
-bash
-Kopiuj
-git clone <YOUR_REPOSITORY_URL>
-cd <YOUR_REPOSITORY_DIRECTORY>
-Docker Compose Configuration
-The provided docker-compose.yml file defines two services:
+- **Data Storage:**
 
-postgres:
-Runs PostgreSQL version 17 with:
+  - Uses PostgreSQL for fast, low-latency querying.
+  - Supports efficient retrieval by individual SWIFT code and by country (using ISO-2 codes).
 
-Database: exercisedb
-User: postgres
-Password: postgres
-Port mapping: 5432:5432
-app:
-Builds the application image from the Dockerfile in the exercise folder and sets the following environment variables:
+- **REST API Endpoints:**
 
-SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/exercisedb
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=postgres
-Port mapping for the application is 8080:8080.
+  - Retrieve details for a single SWIFT code (headquarters include branch details).
+  - Retrieve all SWIFT codes for a specific country.
+  - Add new SWIFT code entries.
+  - Delete SWIFT code entries by code.
 
-Running the Application
-Build and Start Containers
+- **Containerization:**
 
-In the project’s root directory, run:
+  - The application and PostgreSQL database are containerized using Docker and Docker Compose.
+  - Endpoints are accessible at [http://localhost:8080].
 
-bash
-Kopiuj
-docker-compose up --build
-Access the API
+- **Testing:**
+  - Comprehensive unit and integration tests ensure the solution’s correctness and reliability.
 
-Once the containers are running, the REST API will be accessible at http://localhost:8080.
+## Technologies Used
 
-API Endpoints
+- **Backend:** Java with Spring Boot
+- **Database:** PostgreSQL
+- **Containerization:** Docker & Docker Compose
+- **Testing:** Junit, Mockito, TestContainers
 
-1. Retrieve a Single SWIFT Code
-   Endpoint:
-   GET /v1/swift-codes/{swift-code}
+# How to Run the Services
 
-For Headquarters:
-If the SWIFT code represents a headquarters, the response includes branch details.
+Below is a `docker-compose.yml` snippet that defines two services:
 
-Example Response:
+1. **Postgres** – A PostgreSQL 17 database.
+2. **app** – The application container, which depends on the PostgreSQL service.
 
-json
-Kopiuj
-{
-"address": "123 Main St.",
-"bankName": "BANK OF EXAMPLE",
-"countryISO2": "US",
-"countryName": "UNITED STATES",
-"isHeadquarter": true,
-"swiftCode": "EXAMPLXX",
-"branches": [
-{
-"address": "456 Branch Ave.",
-"bankName": "BANK OF EXAMPLE",
-"countryISO2": "US",
-"isHeadquarter": false,
-"swiftCode": "EXAMPL12"
-}
-// ... additional branches
-]
-}
-For Branches:
-If the SWIFT code represents a branch, the response does not include branch details.
+## Prerequisites
 
-Example Response:
+- [Docker](https://docs.docker.com/get-docker/) installed.
+- [Docker Compose](https://docs.docker.com/compose/install/) installed.  
+  (If you're using Docker Desktop on Windows or macOS, Docker Compose comes bundled.)
 
-json
-Kopiuj
-{
-"address": "456 Branch Ave.",
-"bankName": "BANK OF EXAMPLE",
-"countryISO2": "US",
-"countryName": "UNITED STATES",
-"isHeadquarter": false,
-"swiftCode": "EXAMPL12"
-} 2. Retrieve SWIFT Codes for a Specific Country
-Endpoint:
-GET /v1/swift-codes/country/{countryISO2code}
+## Steps to Run
 
-Example Response:
+1. **Clone/Download the Repository**  
+   Make sure you have the project folder containing the `docker-compose.yml` file.
 
-json
-Kopiuj
-{
-"countryISO2": "US",
-"countryName": "UNITED STATES",
-"swiftCodes": [
-{
-"address": "123 Main St.",
-"bankName": "BANK OF EXAMPLE",
-"countryISO2": "US",
-"isHeadquarter": true,
-"swiftCode": "EXAMPLXX"
-},
-{
-"address": "456 Branch Ave.",
-"bankName": "BANK OF EXAMPLE",
-"countryISO2": "US",
-"isHeadquarter": false,
-"swiftCode": "EXAMPL12"
-}
-// ... additional entries
-]
-} 3. Add a New SWIFT Code Entry
-Endpoint:
-POST /v1/swift-codes
+2. **Build the Application (If Not Already Built)**
 
-Request Body:
+   - If you have a Dockerfile for the application, ensure that it’s referenced properly in your `docker-compose.yml` under the `app` service (`build: exercise`).
 
-json
-Kopiuj
-{
-"address": "789 New Rd.",
-"bankName": "NEW BANK",
-"countryISO2": "GB",
-"countryName": "UNITED KINGDOM",
-"isHeadquarter": true,
-"swiftCode": "NEWBKXXX"
-}
-Example Response:
+3. **Start the Containers**  
+   From the project root folder (where your `docker-compose.yml` lives), run:
+   ```bash
+   docker-compose up -d
+   ```
 
-json
-Kopiuj
-{
-"message": "SWIFT code added successfully."
-} 4. Delete a SWIFT Code Entry
-Endpoint:
-DELETE /v1/swift-codes/{swift-code}
+## REST Endpoints
 
-Example Response:
+From the instructions, you have these required endpoints:
 
-json
-Kopiuj
-{
-"message": "SWIFT code deleted successfully."
-}
-Testing
-Running Unit & Integration Tests
-Assuming you are using Maven, run:
+- **GET** `/v1/swift-codes/{swift-code}`
+- **GET** `/v1/swift-codes/country/{countryISO2code}`
+- **POST** `/v1/swift-codes`
+- **DELETE** `/v1/swift-codes/{swift-code}`
 
-bash
-Kopiuj
-./mvnw test
-For Gradle:
+---
 
-bash
-Kopiuj
-./gradlew test
-These tests ensure that all endpoints function correctly and edge cases are handled with clear error messages.
+### Currently Covered
+
+#### Endpoint 1: `GET /v1/swift-codes/{swift-code}`
+
+- **`shouldReturnNotFoundWhenSwiftCodeDoesNotExist()`**  
+  Tests the `404 Not Found` scenario.
+- **`shouldCreateAndRetrieveSwiftCode()`**  
+  Tests a valid retrieval scenario for a newly created code.
+- **`shouldRetrieveHeadquarterWithBranches()`**  
+  Tests retrieval of a headquarter with its branches.
+
+#### Endpoint 3: `POST /v1/swift-codes`
+
+- **`shouldCreateAndRetrieveSwiftCode()`**  
+  Verifies successful creation and retrieval.
+- **`shouldThrowExceptionWhenCreatingDuplicateSwiftCode()`**  
+  Verifies duplicate SWIFT code scenario.
+- **`shouldReturnBadRequestWhenCreatingSwiftCodeWithEmptyBody()`**  
+  Covers empty JSON requests.
+- **`shouldReturnBadRequestWhenCreatingSwiftCodeWithInvalidData()`**  
+  Partially covers validation failures.
+
+#### Endpoint 4: `DELETE /v1/swift-codes/{swift-code}`
+
+- **`shouldDeleteSwiftCode()`**  
+  Tests successful deletion.
+- **`shouldReturnNotFoundWhenDeletingNonExistingSwiftCode()`**  
+  Tests `404 Not Found` scenario.
+
+## How to Run Tests
+
+This guide explains how to run both **unit** and **integration** tests in the project.
+
+---
+
+### Prerequisites
+
+1. **Docker Installed**: Testcontainers requires Docker to be running on your machine.
+2. **Build Tool**: Depending on the project setup, ensure you have the appropriate build tool installed (e.g., Maven or Gradle).
+
+---
+
+### Steps to Run Tests
+
+1. **Clone/Download the Project**
+
+   - Make sure you have the complete project source code on your local machine.
+
+2. **Navigate to the Project Directory**
+
+   - In your terminal or command prompt, go to the project's root folder (where the main build file—`pom.xml` or `build.gradle`—is located).
+
+3. **Run Tests**
+
+   #### Maven
+
+   If the project uses Maven:
+
+   ```bash
+   mvn clean test
+   ```
